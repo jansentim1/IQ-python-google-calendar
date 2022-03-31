@@ -1,7 +1,7 @@
 #! /bin/bash
 
 # run from project root
-NAME=gws-meets-matching
+NAME=iq-python-google-calendar
 REGISTRY=worksuite
 IMAGE=$REGISTRY/$NAME
 HASH=$(git log -1 --pretty=%H)

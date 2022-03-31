@@ -59,7 +59,7 @@ def send_share_contact_details(meeting):
 
     r1 = requests.post(data=data1, url=url1, headers=headers)
     r2 = requests.post(data=data2, url=url2, headers=headers)
-    return (r1.status_code, r2.status_code)
+    return (r1.content, r2.content)
 
 
 def send_accept_meeting(meeting, expert1, expert2):
@@ -88,7 +88,7 @@ def send_accept_meeting(meeting, expert1, expert2):
     )
 
     r1 = requests.post(data=data, url=url, headers=headers)
-    return r1.status_code
+    return r1.content
 
 
 def send_declined_meeting(meeting, expert1, expert2):

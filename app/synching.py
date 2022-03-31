@@ -4,8 +4,8 @@ import datetime
 from app.crud import update_meeting_status, update_meeting_time, decline_meeting
 from app.db import db
 from app.logging import log
-from app.google_calendar import get_google_event  # , update_google_event
-from app.hubspot import send_share_contact_details, send_accept_meeting
+from app.google_calendar import get_google_event, get_calendar_service  # , update_google_event
+from app.hubspot import send_share_contact_details, send_accept_meeting, send_declined_meeting
 
 
 def start_google_cronjob():
@@ -13,7 +13,7 @@ def start_google_cronjob():
     start_time = time.time()
     log.info("%s is the start-time" % (time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(start_time))))
     log.info("the job is running")
-
+    google_calendar_service = get_calendar_service()
     cursor = db.meets.find({"proposed_time": {"$gte": datetime.datetime.now().isoformat()}})
     for meeting in cursor:
 
@@ -21,9 +21,10 @@ def start_google_cronjob():
             continue
 
         event_id = meeting["google_event_id"]
-        if not event_id == "asfi70b0u":
-            continue
-        event = get_google_event(event_id)
+        log.info(event_id)
+        # if not event_id == "asfi70b0u":
+        #     continue
+        event = get_google_event(event_id, google_calendar_service)
         start_event = datetime.datetime.fromisoformat(event["start"]["dateTime"])
         proposed_time = datetime.datetime.fromisoformat(meeting["proposed_time"])
         if start_event != proposed_time:
@@ -34,7 +35,7 @@ def start_google_cronjob():
             log.info(meeting["first_expert"]["name"])
             log.info(meeting["second_expert"]["name"])
             update_meeting_time(start_event, meeting)
-            # update_google_event(event_id,event, meeting, proposed_time)
+            # update_google_event(event_id,event, meeting, proposed_time, google_calendar_service)
         else:
             pass
 
@@ -50,18 +51,20 @@ def start_google_cronjob():
 
         s1 = meeting["first_expert"]["status"][0]["status"]
         s2 = meeting["second_expert"]["status"][0]["status"]
-        log.info(s1)
-        log.info(s2)
+
         if r1 == "accepted" and s1 == "pending":
             s1 = "accepted"
             changed_status_1 = True
         elif r1 == "declined" and meeting["admin_status"] != "cancelled":
-            decline_meeting(meeting, "first_expert", "second_expert")
+            decline_meeting(meeting, "first_expert")
+            send_declined_meeting(meeting, "first_expert", "second_expert")
+
         if r2 == "accepted" and s2 == "pending":
             s2 = "accepted"
             changed_status_2 = True
         elif r2 == "declined" and meeting["admin_status"] != "cancelled":
-            decline_meeting(meeting, "second_expert", "first_expert")
+            decline_meeting(meeting, "second_expert")
+            send_declined_meeting(meeting, "second_expert", "first_expert")
 
         if changed_status_1 or changed_status_2:
             if s1 == "accepted" and s2 == "accepted":

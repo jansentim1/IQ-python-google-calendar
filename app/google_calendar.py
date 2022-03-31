@@ -29,7 +29,7 @@ def get_calendar_service():
     return service
 
 
-def get_google_event(event_id):
+def get_google_event(event_id, google_calendar_service):
     event = google_calendar_service.events().get(calendarId="primary", eventId=event_id).execute()
     if not event:
         log.critical("Event not found")
@@ -37,7 +37,7 @@ def get_google_event(event_id):
     return event
 
 
-def update_google_event(event_id, event, meeting, proposed_time):
+def update_google_event(event_id, event, meeting, proposed_time, google_calendar_service):
     d = proposed_time.astimezone(pytz.utc).replace(tzinfo=None)
     start = d.isoformat() + "Z"
     end = (d + datetime.timedelta(minutes=45)).isoformat() + "Z"
@@ -58,7 +58,7 @@ def update_google_event(event_id, event, meeting, proposed_time):
         calendarId="primary", eventId=event_id, body=event, sendUpdates="all"
     ).execute()
 
-    event = get_google_event(event_id)
+    event = get_google_event(event_id, google_calendar_service)
     event["attendees"][0]["email"] = meeting["first_expert"]["email"]
     event["attendees"][0]["displayName"] = meeting["first_expert"]["name"]
     event["attendees"][0]["responseStatus"] = r1
@@ -66,18 +66,3 @@ def update_google_event(event_id, event, meeting, proposed_time):
     event["attendees"][1]["displayName"] = meeting["second_expert"]["name"]
     event["attendees"][1]["responseStatus"] = r2
     google_calendar_service.events().update(calendarId="primary", eventId=event_id, body=event).execute()
-
-
-def delete_placeholders(event_ids):
-    if not event_ids:
-        return
-    for event_id in event_ids:
-        event = google_calendar_service.events().get(calendarId="primary", eventId=event_id).execute()
-        print(event)
-        if event:
-            google_calendar_service.events().delete(
-                calendarId="primary", eventId=event_id, sendUpdates="none"
-            ).execute()
-
-
-google_calendar_service = get_calendar_service()

@@ -24,19 +24,15 @@ def update_meeting_time(start_event, meeting):
 def decline_meeting(meeting, expert):
     db.meets.update_one(
         {"meeting_id": meeting["meeting_id"]},
-        {"$set": {"admin_status": "cancelled"}},
         {
-            "$push": {
-                expert
-                + ".status": {
-                    "status": "declined",
-                    "reason": {"selected": "Other", "explanation": "automated from google calendar"},
-                    "timestamp": datetime.datetime.now().isoformat(),
-                }
+            "$set": {
+                "admin_status": "cancelled",
+                expert + ".status.0.status": "declined",
+                expert + ".status.0.reason": {"selected": "Other", "explanation": "automated from google calendar"},
+                expert + ".status.0.timestamp": datetime.datetime.now().isoformat(),
             }
         },
     )
-
     log.info(f"removed {meeting['meeting_id']}")
 
 
