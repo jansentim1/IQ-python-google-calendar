@@ -19,6 +19,8 @@ class Config(object):
         self.CLIENT_ID: str = os.environ.get("CLIENT_ID", "")
         self.CLIENT_SECRET: str = os.environ.get("CLIENT_SECRET", "")
         self.REFRESH_TOKEN: str = os.environ.get("REFRESH_TOKEN", "")
+        self.USERNAME_MATCHER: str = os.environ.get("USERNAME_MATCHER", "")
+        self.PASSWORD_MATCHER: str = os.environ.get("PASSWORD_MATCHER", "")
 
         # mongo
         self.MONGO_COLLECTION_NAME: str = os.environ.get("MONGO_COLLECTION_NAME", "platform-users")

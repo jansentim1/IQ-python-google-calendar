@@ -1,10 +1,13 @@
 import time
 import datetime
+import requests
+import json
 
+from app.config import config
 from app.crud import update_meeting_status, update_meeting_time, decline_meeting
 from app.db import db
 from app.logging import log
-from app.google_calendar import get_google_event, get_calendar_service  # , update_google_event
+from app.google_calendar import get_google_event, get_calendar_service, delete_calendar_event  # , update_google_event
 from app.hubspot import send_share_contact_details, send_accept_meeting, send_declined_meeting
 
 
@@ -58,13 +61,14 @@ def start_google_cronjob():
         elif r1 == "declined" and meeting["admin_status"] != "cancelled":
             decline_meeting(meeting, "first_expert")
             send_declined_meeting(meeting, "first_expert", "second_expert")
-
+            delete_calendar_event(event_id, google_calendar_service)
         if r2 == "accepted" and s2 == "pending":
             s2 = "accepted"
             changed_status_2 = True
         elif r2 == "declined" and meeting["admin_status"] != "cancelled":
             decline_meeting(meeting, "second_expert")
             send_declined_meeting(meeting, "second_expert", "first_expert")
+            delete_calendar_event(event_id, google_calendar_service)
 
         if changed_status_1 or changed_status_2:
             if s1 == "accepted" and s2 == "accepted":
@@ -74,3 +78,63 @@ def start_google_cronjob():
             else:
                 log.info(send_accept_meeting(meeting, "second_expert", "first_expert"))
             update_meeting_status(meeting, s1, s2)
+
+
+def start_placeholder_cronjob():
+    l = []
+    for i in db.meetonboardings.find():
+        if not i["step_timestamps"]["introduction"]:
+            continue
+
+        flexible = i["availability"]["flexibleSlots"]
+        unsubscribed = i["availability"]["break"].get("unsubscribed")
+        if unsubscribed:
+            continue
+        if i.get("matching_poule", "lkjh") == "testing":
+            continue
+
+        if flexible:
+            for meeting_request in flexible:
+                if not meeting_request.get("placeholder_google_ids") and meeting_request["requestCompleted"] == False:
+
+                    net = db.networkers.find_one({"uuid": i["uuid"]})
+                    if "+" in net["email"]:
+                        print("fake account", net["email"])
+                        continue
+                    l.append(
+                        (
+                            net["email"],
+                            i["uuid"],
+                            meeting_request["hub"],
+                            meeting_request["times"],
+                            meeting_request["requestCompleted"],
+                            meeting_request["timestamp"],
+                            meeting_request["request_id"],
+                        )
+                    )
+    log.info(len(l))
+    endpoint = "https://inqommon.com/matcher_api/login"
+    files = {"username": (None, config.USERNAME_MATCHER), "password": (None, config.PASSWORD_MATCHER)}
+    response_auth = requests.post(endpoint, files=files)
+    bearer = response_auth.json()["access_token"]
+
+    h = {"accept": "application/json", "Content-Type": "application/json", "Authorization": "Bearer " + bearer}
+
+    for i in l:
+        log.info(f"{i[1]} starting")
+        d = json.dumps(i[3])
+        endpoint = (
+            "https://inqommon.com/matcher_api/matching_job/set_placeholders?uuid="
+            + i[1]
+            + "&hub="
+            + i[2]
+            + "&requestcompleted="
+            + str(i[4])
+            + "&timestamp="
+            + i[5]
+            + "&request_id="
+            + i[6]
+        )
+        response = requests.post(endpoint, headers=h, data=d).json()
+        log.info(f"{i[0]},{response}")
+        time.sleep(30)
