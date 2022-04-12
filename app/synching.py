@@ -113,28 +113,30 @@ def start_placeholder_cronjob():
                         )
                     )
     log.info(len(l))
-    endpoint = "https://inqommon.com/matcher_api/login"
-    files = {"username": (None, config.USERNAME_MATCHER), "password": (None, config.PASSWORD_MATCHER)}
-    response_auth = requests.post(endpoint, files=files)
-    bearer = response_auth.json()["access_token"]
 
-    h = {"accept": "application/json", "Content-Type": "application/json", "Authorization": "Bearer " + bearer}
+    if l:
+        endpoint = "https://inqommon.com/matcher_api/login"
+        files = {"username": (None, config.USERNAME_MATCHER), "password": (None, config.PASSWORD_MATCHER)}
+        response_auth = requests.post(endpoint, files=files)
+        bearer = response_auth.json()["access_token"]
 
-    for i in l:
-        log.info(f"{i[1]} starting")
-        d = json.dumps(i[3])
-        endpoint = (
-            "https://inqommon.com/matcher_api/matching_job/set_placeholders?uuid="
-            + i[1]
-            + "&hub="
-            + i[2]
-            + "&requestcompleted="
-            + str(i[4])
-            + "&timestamp="
-            + i[5]
-            + "&request_id="
-            + i[6]
-        )
-        response = requests.post(endpoint, headers=h, data=d).json()
-        log.info(f"{i[0]},{response}")
-        time.sleep(30)
+        h = {"accept": "application/json", "Content-Type": "application/json", "Authorization": "Bearer " + bearer}
+
+        for i in l:
+            log.info(f"{i[1]} starting")
+            d = json.dumps(i[3])
+            endpoint = (
+                "https://inqommon.com/matcher_api/matching_job/set_placeholders?uuid="
+                + i[1]
+                + "&hub="
+                + i[2]
+                + "&requestcompleted="
+                + str(i[4])
+                + "&timestamp="
+                + i[5]
+                + "&request_id="
+                + i[6]
+            )
+            response = requests.post(endpoint, headers=h, data=d).json()
+            log.info(f"{i[0]},{response}")
+            time.sleep(30)
