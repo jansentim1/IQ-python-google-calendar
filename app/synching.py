@@ -17,7 +17,8 @@ def start_google_cronjob():
     log.info("%s is the start-time" % (time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(start_time))))
     log.info("the job is running")
     google_calendar_service = get_calendar_service()
-    cursor = db.meets.find({"proposed_time": {"$gte": datetime.datetime.now().isoformat()}})
+    date = datetime.datetime.now() - datetime.timedelta(days=7)
+    cursor = db.meets.find({"proposed_time": {"$gte": date.isoformat()}})
     for meeting in cursor:
 
         if not meeting.get("google_event_id"):
