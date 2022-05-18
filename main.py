@@ -6,7 +6,8 @@ InQommon google calendar automation
 import time
 from app.logging import log
 from app.synching import start_google_cronjob, start_placeholder_cronjob
-from app.utils import send_slack_message
+
+# from app.utils import send_slack_message
 
 
 if __name__ == "__main__":
@@ -17,14 +18,14 @@ if __name__ == "__main__":
             print("Update failed, wait for 1 minute and continue")
             webhook = "https://hooks.slack.com/services/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"
             payload = {"text": "Google Calendar API not working! CHECK NOW"}
-            send_slack_message(webhook, payload)
+            # send_slack_message(webhook, payload)
         try:
             start_placeholder_cronjob()
         except Exception:
             print("Update failed, wait for 1 minute and continue")
             webhook = "https://hooks.slack.com/services/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"
             payload = {"text": "placeholder cronjob not working! CHECK NOW"}
-            send_slack_message(webhook, payload)
+            # send_slack_message(webhook, payload)
         for i in range(5):
             log.info(f"{5-i} minutes left before next script runs")
             time.sleep(60)
