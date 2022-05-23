@@ -8,7 +8,7 @@ from app.crud import update_meeting_status, update_meeting_time, decline_meeting
 from app.db import db
 from app.logging import log
 from app.google_calendar import get_google_event, get_calendar_service, delete_calendar_event  # , update_google_event
-from app.hubspot import send_share_contact_details, send_accept_meeting, send_declined_meeting
+from app.sendgrid_email import send_share_contact_details, send_accept_meeting, send_declined_meeting
 
 
 def start_google_cronjob():
@@ -26,7 +26,7 @@ def start_google_cronjob():
 
         event_id = meeting["google_event_id"]
         log.info(event_id)
-        # if not event_id == "asfi70b0u":
+        # if event_id != "ole0mh1i6":
         #     continue
         event = get_google_event(event_id, google_calendar_service)
         start_event = datetime.datetime.fromisoformat(event["start"]["dateTime"])
@@ -61,14 +61,14 @@ def start_google_cronjob():
             changed_status_1 = True
         elif r1 == "declined" and meeting["admin_status"] != "cancelled":
             decline_meeting(meeting, "first_expert")
-            send_declined_meeting(meeting, "first_expert", "second_expert")
+            log.info(send_declined_meeting(meeting, "first_expert", "second_expert"))
             delete_calendar_event(event_id, google_calendar_service)
         if r2 == "accepted" and s2 == "pending":
             s2 = "accepted"
             changed_status_2 = True
         elif r2 == "declined" and meeting["admin_status"] != "cancelled":
             decline_meeting(meeting, "second_expert")
-            send_declined_meeting(meeting, "second_expert", "first_expert")
+            log.info(send_declined_meeting(meeting, "second_expert", "first_expert"))
             delete_calendar_event(event_id, google_calendar_service)
 
         if changed_status_1 or changed_status_2:
@@ -111,6 +111,8 @@ def start_placeholder_cronjob():
                             meeting_request["requestCompleted"],
                             meeting_request["timestamp"],
                             meeting_request["request_id"],
+                            net["first_name"],
+                            i["tz_string"],
                         )
                     )
     log.info(len(l))

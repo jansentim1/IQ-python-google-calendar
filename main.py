@@ -14,15 +14,15 @@ if __name__ == "__main__":
     while True:
         try:
             start_google_cronjob()
-        except Exception:
-            print("Update failed, wait for 1 minute and continue")
+        except Exception as e:
+            log.critical("Update failed, wait for 1 minute and continue: " + str(e))
             webhook = "https://hooks.slack.com/services/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"
             payload = {"text": "Google Calendar API not working! CHECK NOW"}
             # send_slack_message(webhook, payload)
         try:
             start_placeholder_cronjob()
-        except Exception:
-            print("Update failed, wait for 1 minute and continue")
+        except Exception as e:
+            log.critical("Update failed, wait for 1 minute and continue: " + str(e))
             webhook = "https://hooks.slack.com/services/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"
             payload = {"text": "placeholder cronjob not working! CHECK NOW"}
             # send_slack_message(webhook, payload)

@@ -41,8 +41,7 @@ def delete_calendar_event(event_id, google_calendar_service):
     if not event_id:
         return
     event = google_calendar_service.events().get(calendarId="primary", eventId=event_id).execute()
-    log.info(event)
-    log.info("has been removed")
+    log.info(event_id + " has been removed")
     if event:
         google_calendar_service.events().delete(calendarId="primary", eventId=event_id, sendUpdates="none").execute()
 

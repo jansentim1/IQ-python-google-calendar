@@ -15,6 +15,7 @@ class Config(object):
         self.ROOT_DIR = self.APP_DIR.parent
 
         # auth
+        self.SENDGRID_KEY: str = os.environ.get("SENDGRID_KEY", "")
         self.HAPIKEY: str = os.environ.get("HAPIKEY", "")
         self.CLIENT_ID: str = os.environ.get("CLIENT_ID", "")
         self.CLIENT_SECRET: str = os.environ.get("CLIENT_SECRET", "")
