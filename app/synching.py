@@ -112,7 +112,7 @@ def start_placeholder_cronjob():
                             meeting_request["timestamp"],
                             meeting_request["request_id"],
                             net["first_name"],
-                            i["tz_string"],
+                            i.get("tz_string", "Europe/Amsterdam"),
                         )
                     )
     log.info(len(l))
