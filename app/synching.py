@@ -115,6 +115,7 @@ def start_placeholder_cronjob():
                             i.get("tz_string", "Europe/Amsterdam"),
                         )
                     )
+
     log.info(len(l))
 
     if l:
