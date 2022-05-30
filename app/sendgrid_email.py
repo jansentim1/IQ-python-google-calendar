@@ -144,4 +144,5 @@ def send_placeholder_email(email, times, first_name, tz):
     filedata = filedata.replace("{{first_name}}", first_name)
     filedata = filedata.replace("{{testing_html}}", date_times_string)
     s1 = send_email(email, filedata, title)
+
     return s1
