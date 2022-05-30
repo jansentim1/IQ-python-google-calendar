@@ -110,13 +110,14 @@ def send_declined_meeting(meeting, expert1, expert2):
     return s1
 
 
-def send_placeholder_email(email, uuid, hub, times, first_name, tz):
+def send_placeholder_email(email, times, first_name, tz):
 
     day_endings = {1: "st", 2: "nd", 3: "rd", 4: "th", 5: "th", 6: "th", 7: "th", 8: "th", 9: "th", 10: "th"}
-
+    if not tz:
+        return f"Email was not sent to {email} because there was no timezone"
     date_times_string = ""
     for ind, time_raw in enumerate(times):
-        timeobj = datetime.datetime.fromisoformat(time_raw[:-1]).astimezone(pytz.timezone(tz))
+        timeobj = pytz.utc.localize(datetime.datetime.fromisoformat(time_raw[:-1])).astimezone(pytz.timezone(tz))
         date_times_string = (
             date_times_string
             + "<b>"
@@ -142,4 +143,5 @@ def send_placeholder_email(email, uuid, hub, times, first_name, tz):
     # Replace the target string
     filedata = filedata.replace("{{first_name}}", first_name)
     filedata = filedata.replace("{{testing_html}}", date_times_string)
-    send_email(email, filedata, title)
+    s1 = send_email(email, filedata, title)
+    return s1

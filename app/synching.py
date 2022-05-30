@@ -8,7 +8,12 @@ from app.crud import update_meeting_status, update_meeting_time, decline_meeting
 from app.db import db
 from app.logging import log
 from app.google_calendar import get_google_event, get_calendar_service, delete_calendar_event  # , update_google_event
-from app.sendgrid_email import send_share_contact_details, send_accept_meeting, send_declined_meeting
+from app.sendgrid_email import (
+    send_share_contact_details,
+    send_accept_meeting,
+    send_declined_meeting,
+    send_placeholder_email,
+)
 
 
 def start_google_cronjob():
@@ -143,4 +148,6 @@ def start_placeholder_cronjob():
             )
             response = requests.post(endpoint, headers=h, data=d).json()
             log.info(f"{i[0]},{response}")
+
+            log.info(send_placeholder_email(i[0], i[3], i[7], i[8]))
             time.sleep(30)
